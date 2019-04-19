@@ -1,16 +1,17 @@
 
 var ip = require('ip')
 
-function IPSet (start, end) {
+function IPSet (start, end, score) {
   this.start = start
   this.end   = end
   this.max   = end
   this.depth = 1
   this.left  = null
   this.right = null
+  this.score = score || 0
 }
 
-IPSet.prototype.add = function (start, end) {
+IPSet.prototype.add = function (start, end, score) {
   var d = start - this.start
   var update = false
 
@@ -19,18 +20,18 @@ IPSet.prototype.add = function (start, end) {
     update = true
   } else if (d < 0) {
     if (this.left) {
-      update = this.left.add(start, end)
+      update = this.left.add(start, end, score)
       if (update) this._balance()
     } else {
-      this.left = new IPSet(start, end)
+      this.left = new IPSet(start, end, score)
       update = true
     }
   } else if (d > 0) {
     if (this.right) {
-      update = this.right.add(start, end)
+      update = this.right.add(start, end, score)
       if (update) this._balance()
     } else {
-      this.right = new IPSet(start, end)
+      this.right = new IPSet(start, end, score)
       update = true
     }
   }
@@ -39,13 +40,17 @@ IPSet.prototype.add = function (start, end) {
   return update
 }
 
-IPSet.prototype.contains = function (addr) {
+IPSet.prototype.get = function (addr, default) {
   var node = this
   while (node && !(addr >= node.start && addr <= node.end)) {
     if (node.left && node.left.max >= addr) node = node.left
     else node = node.right
   }
-  return !!node
+  return node || default
+}
+
+IPSet.prototype.contains = function (addr) {
+  return !!this.get(addr)
 }
 
 IPSet.prototype._balance = function () {
@@ -111,13 +116,15 @@ IPSet.prototype._update = function () {
   this.max = Math.max(this.end, this.left ? this.left.max : 0, this.right ? this.right.max : 0)
 }
 
-module.exports = function (blocklist) {
+module.exports = function (blocklist, score) {
   var tree = null
   var self = {}
 
-  self.add = function (start, end) {
+  self.add = function (start, end, score) {
     if (!start) return
+    score = score || 0;
     if (typeof start === 'object') {
+      score = end;
       end = start.end
       start = start.start
     }
@@ -135,8 +142,14 @@ module.exports = function (blocklist) {
 
     if (start < 0 || end > 4294967295 || end < start) throw new Error('Invalid block range')
 
-    if (tree) tree.add(start, end)
-    else tree = new IPSet(start, end)
+    if (tree) tree.add(start, end, score)
+    else tree = new IPSet(start, end, score)
+  }
+
+  self.get = function (addr, default) {
+    if (!tree) return default
+    if (typeof addr !== 'number') addr = ip.toLong(addr)
+    return tree.get(addr, default)
   }
 
   self.contains = function (addr) {
@@ -147,7 +160,7 @@ module.exports = function (blocklist) {
 
   if (Array.isArray(blocklist)) {
     blocklist.forEach(function (block) {
-      self.add(block)
+      self.add(block, score)
     })
   }
 
