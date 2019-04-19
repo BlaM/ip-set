@@ -159,7 +159,7 @@ module.exports = function (blocklist, score) {
 
   if (Array.isArray(blocklist)) {
     blocklist.forEach(function (block) {
-      self.add(block, score)
+      self.add(block, null, score)
     })
   }
 
