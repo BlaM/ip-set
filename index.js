@@ -40,13 +40,13 @@ IPSet.prototype.add = function (start, end, score) {
   return update
 }
 
-IPSet.prototype.get = function (addr, default) {
+IPSet.prototype.get = function (addr, defVal) {
   var node = this
   while (node && !(addr >= node.start && addr <= node.end)) {
     if (node.left && node.left.max >= addr) node = node.left
     else node = node.right
   }
-  return node || default
+  return node || defVal
 }
 
 IPSet.prototype.contains = function (addr) {
@@ -146,10 +146,10 @@ module.exports = function (blocklist, score) {
     else tree = new IPSet(start, end, score)
   }
 
-  self.get = function (addr, default) {
-    if (!tree) return default
+  self.get = function (addr, defVal) {
+    if (!tree) return defVal
     if (typeof addr !== 'number') addr = ip.toLong(addr)
-    return tree.get(addr, default)
+    return tree.get(addr, defVal)
   }
 
   self.contains = function (addr) {
