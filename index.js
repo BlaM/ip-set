@@ -73,15 +73,18 @@ IPSet.prototype._balance = function () {
 IPSet.prototype._rotateLL = function () {
   var _start = this.start
   var _end   = this.end
+  var _score = this.score
   var _right = this.right
 
   this.start = this.left.start
   this.end   = this.left.end
+  this.score = this.left.score
   this.right = this.left
   this.left  = this.left.left
 
   this.right.left  = this.right.right
   this.right.right = _right
+  this.right.score = _score
   this.right.start = _start
   this.right.end   = _end
 
@@ -92,11 +95,12 @@ IPSet.prototype._rotateLL = function () {
 IPSet.prototype._rotateRR = function () {
   var _start = this.start
   var _end   = this.end
+  var _score = this.score
   var _left  = this.left
 
   this.start = this.right.start
   this.end   = this.right.end
-  this.end   = this.right.end
+  this.score = this.right.score
   this.left  = this.right
   this.right = this.right.right
 
@@ -104,6 +108,7 @@ IPSet.prototype._rotateRR = function () {
   this.left.left  = _left
   this.left.start = _start
   this.left.end   = _end
+  this.left.score = _score
 
   this.left._update()
   this._update()
