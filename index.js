@@ -132,6 +132,7 @@ module.exports = function (blocklist, score) {
     var cidrStr = /\/\d{1,2}/;
     if (typeof start === 'string' && cidrStr.test(start)) {
       var ipSubnet = ip.cidrSubnet(start);
+      score = end;
       start = ipSubnet.networkAddress;
       end = ipSubnet.broadcastAddress;
     }
