@@ -124,7 +124,6 @@ module.exports = function (blocklist, score) {
     if (!start) return
     score = score || 0;
     if (typeof start === 'object') {
-      score = end;
       end = start.end
       start = start.start
     }
@@ -132,7 +131,6 @@ module.exports = function (blocklist, score) {
     var cidrStr = /\/\d{1,2}/;
     if (typeof start === 'string' && cidrStr.test(start)) {
       var ipSubnet = ip.cidrSubnet(start);
-      score = end;
       start = ipSubnet.networkAddress;
       end = ipSubnet.broadcastAddress;
     }
